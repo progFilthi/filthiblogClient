@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import RichTextEditor from "@/components/editor/rich-text-editor";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -29,7 +29,7 @@ export default function CreatePost() {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:8080/api/posts", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -71,10 +71,10 @@ export default function CreatePost() {
       />
 
       <label className="block font-medium">Content</label>
-      <Textarea
-        placeholder="Add blog post content"
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
+      <RichTextEditor
+        placeholder="Add blog post content..."
+        content={content}
+        onChange={setContent}
       />
 
       <Button

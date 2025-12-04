@@ -4,6 +4,7 @@ import { PostResponseTypes } from "@/types/PostsTypes";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 interface PageableResponse {
   content: PostResponseTypes[];
@@ -15,7 +16,7 @@ interface PageableResponse {
   last: boolean;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const formatDate = (dateString: string): string => {
   try {
@@ -267,55 +268,36 @@ export default function HomePage() {
           <>
             <div className="space-y-6">
               {posts.map((post) => (
-                <article
-                  key={post.id}
-                  className="group bg-card border rounded-lg p-6 transition-all hover:shadow-md hover:border-accent"
-                >
-                  <div className="flex items-start justify-between gap-4 mb-4">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <span className="text-sm font-semibold text-primary">
-                          {post.author.username.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                      <div className="min-w-0">
-                        <p className="font-medium truncate">
-                          {post.author.username}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {formatRelativeTime(post.createdAt)}
-                        </p>
+                <Link href={`/posts/${post.id}`} key={post.id} className="block">
+                  <article className="group bg-card border rounded-lg p-6 transition-all hover:shadow-md hover:border-accent cursor-pointer">
+                    <div className="flex items-start justify-between gap-4 mb-4">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <span className="text-sm font-semibold text-primary">
+                            {post.author.username.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-medium truncate">
+                            {post.author.username}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {formatRelativeTime(post.createdAt)}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="mb-4">
-                    <h2 className="text-2xl font-bold mb-2 group-hover:text-primary transition-colors">
-                      {post.title}
-                    </h2>
-                    <p className="text-muted-foreground leading-relaxed line-clamp-3">
-                      {post.content}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground pt-4 border-t">
-                    <div className="flex items-center gap-1.5">
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                      <span>Created {formatDate(post.createdAt)}</span>
+                    <div className="mb-4">
+                      <h2 className="text-2xl font-bold mb-2 group-hover:text-primary transition-colors">
+                        {post.title}
+                      </h2>
+                      <p className="text-muted-foreground leading-relaxed line-clamp-3">
+                        {post.content.replace(/<[^>]*>?/gm, "")}
+                      </p>
                     </div>
-                    {post.updatedAt !== post.createdAt && (
+
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground pt-4 border-t">
                       <div className="flex items-center gap-1.5">
                         <svg
                           className="w-4 h-4"
@@ -327,14 +309,32 @@ export default function HomePage() {
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             strokeWidth={2}
-                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                           />
                         </svg>
-                        <span>Updated {formatDate(post.updatedAt)}</span>
+                        <span>Created {formatDate(post.createdAt)}</span>
                       </div>
-                    )}
-                  </div>
-                </article>
+                      {post.updatedAt !== post.createdAt && (
+                        <div className="flex items-center gap-1.5">
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                            />
+                          </svg>
+                          <span>Updated {formatDate(post.updatedAt)}</span>
+                        </div>
+                      )}
+                    </div>
+                  </article>
+                </Link>
               ))}
             </div>
 

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { PostResponseTypes } from "@/types/PostsTypes";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 interface PageableResponse {
   content: PostResponseTypes[];
@@ -190,7 +190,7 @@ export default function DraftsPage() {
                   </h2>
 
                   <p className="text-muted-foreground leading-relaxed line-clamp-3">
-                    {post.content}
+                    {post.content.replace(/<[^>]*>?/gm, "")}
                   </p>
 
                   <div className="flex gap-4 text-xs text-muted-foreground mt-3 border-t pt-3">
