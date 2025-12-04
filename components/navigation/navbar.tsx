@@ -53,9 +53,8 @@ export default function NavbarPage() {
           localStorage.removeItem("authToken");
         }
       } catch (error) {
-        // If endpoint doesn't exist, just check if token exists
-        // You can remove this fallback once /api/auth/me is implemented
-        setUser({ username: "User", email: "" });
+        console.error("Auth check failed:", error);
+        localStorage.removeItem("authToken");
       }
     }
     setLoading(false);
@@ -108,7 +107,14 @@ export default function NavbarPage() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/admin/dashboard" className="cursor-pointer">
+                  <Link
+                    href={
+                      user.role === "ADMIN"
+                        ? "/admin/dashboard"
+                        : "/dashboard"
+                    }
+                    className="cursor-pointer"
+                  >
                     <LayoutDashboard className="mr-2 h-4 w-4" />
                     Dashboard
                   </Link>

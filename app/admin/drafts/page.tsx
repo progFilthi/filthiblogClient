@@ -7,6 +7,7 @@ import { PostResponseTypes } from "@/types/PostsTypes";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, Send } from "lucide-react";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface PageableResponse {
   content: PostResponseTypes[];
@@ -24,7 +25,6 @@ export default function AdminDraftsPage() {
   const [pageData, setPageData] = useState<PageableResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
-  const [selectedIds, setSelectedIds] = useState<(string | number)[]>([]);
   const [publishing, setPublishing] = useState(false);
 
   useEffect(() => {
@@ -41,7 +41,7 @@ export default function AdminDraftsPage() {
     setLoading(true);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/posts/drafts?page=${page}&size=10`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/posts/drafts/all?page=${page}&size=10`,
         {
           headers: { Authorization: `Bearer ${token}` },
           cache: "no-store",
@@ -61,8 +61,6 @@ export default function AdminDraftsPage() {
   };
 
   const handlePublish = async (id: string | number) => {
-    if (!confirm("Are you sure you want to publish this post?")) return;
-
     const token = localStorage.getItem("authToken");
     setPublishing(true);
 
@@ -90,8 +88,6 @@ export default function AdminDraftsPage() {
   };
 
   const handleDelete = async (id: string | number) => {
-    if (!confirm("Are you sure you want to delete this draft?")) return;
-
     const token = localStorage.getItem("authToken");
     try {
       const res = await fetch(
@@ -125,9 +121,9 @@ export default function AdminDraftsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Drafts</h1>
+            <h1 className="text-3xl font-bold tracking-tight">All Drafts</h1>
             <p className="text-muted-foreground mt-1">
-              Manage your unpublished posts
+              Review and publish drafts from all users
             </p>
           </div>
           <Link href="/admin/create">
@@ -152,25 +148,25 @@ export default function AdminDraftsPage() {
                 <thead className="bg-muted/50 border-b">
                   <tr>
                     <th className="text-left p-4 font-medium">Title</th>
+                    <th className="text-left p-4 font-medium">Author</th>
                     <th className="text-left p-4 font-medium">Created</th>
-                    <th className="text-left p-4 font-medium">Updated</th>
                     <th className="text-right p-4 font-medium">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {posts.map((post) => (
-                    <tr key={post.id} className="border-b last:border-0">
+                    <tr key={post.id} className="border-b last:border-0 hover:bg-muted/50 transition-colors">
                       <td className="p-4">
                         <div className="font-medium">{post.title}</div>
                         <div className="text-sm text-muted-foreground line-clamp-1">
                           {post.content.replace(/<[^>]*>?/gm, "")}
                         </div>
                       </td>
-                      <td className="p-4 text-sm text-muted-foreground">
-                        {new Date(post.createdAt).toLocaleDateString()}
+                      <td className="p-4 text-sm">
+                        {post.author?.username || "Unknown"}
                       </td>
                       <td className="p-4 text-sm text-muted-foreground">
-                        {new Date(post.updatedAt).toLocaleDateString()}
+                        {new Date(post.createdAt).toLocaleDateString()}
                       </td>
                       <td className="p-4">
                         <div className="flex items-center justify-end gap-2">
@@ -179,21 +175,29 @@ export default function AdminDraftsPage() {
                               <Edit className="h-4 w-4" />
                             </Button>
                           </Link>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handlePublish(post.id)}
-                            disabled={publishing}
-                          >
-                            <Send className="h-4 w-4 text-emerald-600" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(post.id)}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
+                          <ConfirmDialog
+                            trigger={
+                              <Button variant="ghost" size="sm" disabled={publishing}>
+                                <Send className="h-4 w-4 text-emerald-600" />
+                              </Button>
+                            }
+                            title="Publish Post"
+                            description="Are you sure you want to publish this post? It will be visible to everyone."
+                            confirmText="Publish"
+                            onConfirm={() => handlePublish(post.id)}
+                          />
+                          <ConfirmDialog
+                            trigger={
+                              <Button variant="ghost" size="sm">
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            }
+                            title="Delete Draft"
+                            description="Are you sure you want to delete this draft? This action cannot be undone."
+                            confirmText="Delete"
+                            onConfirm={() => handleDelete(post.id)}
+                            variant="destructive"
+                          />
                         </div>
                       </td>
                     </tr>

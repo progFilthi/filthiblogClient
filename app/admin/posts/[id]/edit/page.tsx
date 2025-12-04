@@ -1,12 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import RichTextEditor from "@/components/editor/rich-text-editor";
 import { useRouter, useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { toast } from "sonner";
 import { ArrowLeft, Save, Send } from "lucide-react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export default function EditPost() {
   const router = useRouter();
@@ -18,6 +20,7 @@ export default function EditPost() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [token, setToken] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
     const authToken = localStorage.getItem("authToken");
@@ -26,22 +29,33 @@ export default function EditPost() {
       return;
     }
     setToken(authToken);
+    checkUserRole(authToken);
 
-    // Fetch post data
     if (postId) {
       fetchPost(authToken, postId as string);
     }
   }, [router, postId]);
 
+  const checkUserRole = async (token: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (response.ok) {
+        const userData = await response.json();
+        setUserRole(userData.role);
+      }
+    } catch (error) {
+      setUserRole("USER");
+    }
+  };
+
   const fetchPost = async (token: string, id: string) => {
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (!response.ok) throw new Error("Failed to fetch post");
@@ -51,7 +65,11 @@ export default function EditPost() {
       setContent(data.content);
     } catch (error) {
       toast.error("Failed to load post");
-      router.push("/admin/drafts");
+      if (userRole === "ADMIN") {
+        router.push("/admin/drafts");
+      } else {
+        router.push("/dashboard/my-posts");
+      }
     } finally {
       setLoading(false);
     }
@@ -61,7 +79,6 @@ export default function EditPost() {
     if (!token || !postId) return;
 
     setSaving(true);
-
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${postId}`,
@@ -88,10 +105,7 @@ export default function EditPost() {
   const handlePublish = async () => {
     if (!token || !postId) return;
 
-    if (!confirm("Are you sure you want to publish this post?")) return;
-
     setSaving(true);
-
     try {
       // First save the post
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/${postId}`, {
@@ -118,7 +132,12 @@ export default function EditPost() {
       if (!response.ok) throw new Error("Failed to publish post");
 
       toast.success("Post published successfully!");
-      router.push("/admin/published");
+
+      if (userRole === "ADMIN") {
+        router.push("/admin/published");
+      } else {
+        router.push("/dashboard/my-posts");
+      }
     } catch (error) {
       toast.error("Failed to publish post");
     } finally {
@@ -157,14 +176,23 @@ export default function EditPost() {
               <Save className="h-4 w-4" />
               {saving ? "Saving..." : "Save Draft"}
             </Button>
-            <Button
-              onClick={handlePublish}
-              disabled={saving || !title.trim() || !content.trim()}
-              className="gap-2"
-            >
-              <Send className="h-4 w-4" />
-              Publish
-            </Button>
+            {userRole === "ADMIN" && (
+              <ConfirmDialog
+                trigger={
+                  <Button
+                    disabled={saving || !title.trim() || !content.trim()}
+                    className="gap-2"
+                  >
+                    <Send className="h-4 w-4" />
+                    Publish
+                  </Button>
+                }
+                title="Publish Post"
+                description="Are you sure you want to publish this post? It will be visible to everyone."
+                confirmText="Publish"
+                onConfirm={handlePublish}
+              />
+            )}
           </div>
         </div>
 

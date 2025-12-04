@@ -53,7 +53,7 @@ export function SignupForm({
       if (data.user?.role === "ADMIN") {
         window.location.href = "/admin/dashboard";
       } else {
-        window.location.href = "/";
+        window.location.href = "/dashboard";
       }
     } catch (err) {
       setError(
@@ -78,9 +78,9 @@ export function SignupForm({
               <div className="flex size-8 items-center justify-center rounded-md">
                 <GalleryVerticalEnd className="size-6" />
               </div>
-              <span className="sr-only">Acme Inc.</span>
+              <span className="sr-only">FilthiBlog</span>
             </a>
-            <h1 className="text-xl font-bold">Welcome to Acme Inc.</h1>
+            <h1 className="text-xl font-bold">Welcome to FilthiBlog</h1>
             <FieldDescription>
               Already have an account? <Link href={"/login"}>Sign in</Link>
             </FieldDescription>

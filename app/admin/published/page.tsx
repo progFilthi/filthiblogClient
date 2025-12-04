@@ -7,6 +7,7 @@ import { PostResponseTypes } from "@/types/PostsTypes";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, Eye } from "lucide-react";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface PageableResponse {
   content: PostResponseTypes[];
@@ -59,8 +60,6 @@ export default function AdminPublishedPage() {
   };
 
   const handleDelete = async (id: string | number) => {
-    if (!confirm("Are you sure you want to delete this post?")) return;
-
     const token = localStorage.getItem("authToken");
     try {
       const res = await fetch(
@@ -125,7 +124,7 @@ export default function AdminPublishedPage() {
                 </thead>
                 <tbody>
                   {posts.map((post) => (
-                    <tr key={post.id} className="border-b last:border-0">
+                    <tr key={post.id} className="border-b last:border-0 hover:bg-muted/50 transition-colors">
                       <td className="p-4">
                         <div className="font-medium">{post.title}</div>
                         <div className="text-sm text-muted-foreground line-clamp-1">
@@ -148,13 +147,18 @@ export default function AdminPublishedPage() {
                               <Edit className="h-4 w-4" />
                             </Button>
                           </Link>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(post.id)}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
+                          <ConfirmDialog
+                            trigger={
+                              <Button variant="ghost" size="sm">
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            }
+                            title="Delete Post"
+                            description="Are you sure you want to delete this published post? This action cannot be undone."
+                            confirmText="Delete"
+                            onConfirm={() => handleDelete(post.id)}
+                            variant="destructive"
+                          />
                         </div>
                       </td>
                     </tr>

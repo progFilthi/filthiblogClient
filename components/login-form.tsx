@@ -54,7 +54,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
       if (data.user?.role === "ADMIN") {
         window.location.href = "/admin/dashboard";
       } else {
-        window.location.href = "/";
+        window.location.href = "/dashboard";
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -75,9 +75,9 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
               <div className="flex size-8 items-center justify-center rounded-md">
                 <GalleryVerticalEnd className="size-6" />
               </div>
-              <span className="sr-only">Acme Inc.</span>
+              <span className="sr-only">FilthiBlog</span>
             </a>
-            <h1 className="text-xl font-bold">Welcome to Acme Inc.</h1>
+            <h1 className="text-xl font-bold">Welcome to FilthiBlog</h1>
             <FieldDescription>
               Don&apos;t have an account? <Link href={"/signup"}>Sign up</Link>
             </FieldDescription>

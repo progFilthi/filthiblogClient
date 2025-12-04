@@ -14,7 +14,6 @@ export default function CreatePost() {
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [token, setToken] = useState<string | null>(null);
-  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
     const authToken = localStorage.getItem("authToken");
@@ -23,35 +22,12 @@ export default function CreatePost() {
       return;
     }
     setToken(authToken);
-
-    // Try to get user role from a previous login
-    // This is a fallback - ideally you'd fetch from /api/auth/me
-    checkUserRole(authToken);
   }, [router]);
 
-  const checkUserRole = async (token: string) => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      if (response.ok) {
-        const userData = await response.json();
-        setUserRole(userData.role);
-      }
-    } catch (error) {
-      // Fallback - assume regular user
-      setUserRole("USER");
-    }
-  };
-
   const handleSubmit = async () => {
-    if (!token) return;
+    if (!token || !title.trim() || !content.trim()) return;
 
     setLoading(true);
-
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/posts`,
@@ -65,43 +41,24 @@ export default function CreatePost() {
         }
       );
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.message || "Failed to create post.");
+        const data = await response.json();
+        throw new Error(data.message || "Failed to create post");
       }
 
-      toast.success("Draft saved successfully!");
-      setTitle("");
-      setContent("");
-
-      // Redirect based on role
-      if (userRole === "ADMIN") {
-        router.push("/admin/drafts");
-      } else {
-        router.push("/dashboard/my-posts");
-      }
+      toast.success("Post saved as draft!");
+      router.push("/dashboard/my-posts");
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Something went wrong.";
-      toast.error(errorMessage);
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleBack = () => {
-    if (userRole === "ADMIN") {
-      router.push("/admin/dashboard");
-    } else {
-      router.push("/dashboard");
     }
   };
 
   if (!token) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">Redirecting to login...</div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
       </div>
     );
   }
@@ -111,9 +68,13 @@ export default function CreatePost() {
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <Button variant="ghost" onClick={handleBack} className="gap-2">
+          <Button
+            variant="ghost"
+            onClick={() => router.push("/dashboard")}
+            className="gap-2"
+          >
             <ArrowLeft className="h-4 w-4" />
-            Back to Dashboard
+            Back
           </Button>
           <Button
             onClick={handleSubmit}
@@ -125,25 +86,30 @@ export default function CreatePost() {
           </Button>
         </div>
 
+        {/* Info Banner */}
+        <div className="rounded-lg border bg-blue-500/5 border-blue-500/20 p-4">
+          <p className="text-sm text-muted-foreground">
+            Your post will be saved as a draft. An admin will review and publish it.
+          </p>
+        </div>
+
         {/* Editor */}
         <div className="space-y-4 bg-card border rounded-lg p-6">
-          <div>
-            <h1 className="text-3xl font-bold mb-6">Create New Post</h1>
-          </div>
+          <h1 className="text-2xl font-bold">Create New Post</h1>
 
           <div>
-            <label className="block font-medium mb-2">Title</label>
+            <label className="block text-sm font-medium mb-2">Title</label>
             <Input
               type="text"
               placeholder="Enter post title..."
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="text-2xl font-bold border-0 px-0 focus-visible:ring-0"
+              className="text-lg"
             />
           </div>
 
           <div>
-            <label className="block font-medium mb-2">Content</label>
+            <label className="block text-sm font-medium mb-2">Content</label>
             <RichTextEditor
               placeholder="Write your post content..."
               content={content}
