@@ -50,7 +50,12 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
         localStorage.setItem("authToken", data.token);
       }
 
-      window.location.href = "/dashboard";
+      // Redirect based on user role
+      if (data.user?.role === "ADMIN") {
+        window.location.href = "/admin/dashboard";
+      } else {
+        window.location.href = "/";
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {

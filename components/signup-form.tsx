@@ -49,8 +49,12 @@ export function SignupForm({
         localStorage.setItem("authToken", data.token);
       }
 
-      // Redirect to dashboard or home
-      window.location.href = "/dashboard";
+      // Redirect based on user role
+      if (data.user?.role === "ADMIN") {
+        window.location.href = "/admin/dashboard";
+      } else {
+        window.location.href = "/";
+      }
     } catch (err) {
       setError(
         err instanceof Error
