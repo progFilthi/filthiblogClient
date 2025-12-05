@@ -6,6 +6,7 @@ import { ArrowLeft, Calendar, User } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import DOMPurify from "isomorphic-dompurify";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -128,7 +129,7 @@ export default function PostPage() {
         <div className="prose prose-lg dark:prose-invert max-w-none">
           <div
             className="leading-relaxed text-muted-foreground"
-            dangerouslySetInnerHTML={{ __html: post.content }}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
           />
         </div>
 
